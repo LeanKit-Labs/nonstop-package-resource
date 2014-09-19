@@ -1,0 +1,37 @@
+{
+  "name": "continua-package-resource",
+  "version": "0.1.0",
+  "description": "Hub package HTTP API as a resuable resource lib for Autohost",
+  "main": "src/resource.js",
+  "scripts": {
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/LeanKit-Labs/continua-package-resource"
+  },
+  "keywords": [
+    "continua",
+    "package",
+    "hub",
+    "resource"
+  ],
+  "author": "Alex Robson",
+  "license": "MIT License",
+  "bugs": {
+    "url": "https://github.com/LeanKit-Labs/continua-package-resource/issues"
+  },
+  "homepage": "https://github.com/LeanKit-Labs/continua-package-resource",
+  "devDependencies": {
+    "gulp": "^3.8.7",
+    "gulp-mocha": "^1.0.0",
+    "should": "^4.0.4"
+  },
+  "dependencies": {
+    "configya": "^0.1.0",
+    "continua-pack": "~0.1.0-3",
+    "debug": "^2.0.0",
+    "lodash": "^2.4.1",
+    "when": "^3.4.5"
+  }
+}
