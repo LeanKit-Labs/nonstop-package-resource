@@ -1,5 +1,5 @@
-## continua package resource
-This module can be used to provide the continua package HTTP API to any autohost server.
+## nonstop package resource
+This module can be used to provide the nonstop package HTTP API to any autohost server.
 
 ### Why?
 If you have a client application that you'd like to have installed that auto-updates itself whenever new versions are available - this makes adding the server side support very simple.
@@ -7,7 +7,7 @@ If you have a client application that you'd like to have installed that auto-upd
 ### Using with Autohost
 NPM install this module to your project
 
-	npm install continua-package-resource -S
+	npm install nonstop-package-resource -S
 
 Add the module to the `modules` property in your autohost init:
 
@@ -15,12 +15,12 @@ Add the module to the `modules` property in your autohost init:
 var host = require( 'autohost' );
 host.init( {
 		port: 8888,
-		modules: [ 'continua-package-resource' ]
+		modules: [ 'nonstop-package-resource' ]
 	} );
 ```
 
 ### Consuming
-To consume this API from Node, please look at [continua-hub-client](https://github.com/LeanKit-Labs/continua-hub-client). You can obviously roll your own, but why bother?
+To consume this API from Node, please look at [nonstop-hub-client](https://github.com/LeanKit-Labs/nonstop-hub-client). You can obviously roll your own, but why bother?
 
 ## API
 
