@@ -1,8 +1,7 @@
-var fs = require( 'fs' );
-var _ = require( 'lodash' );
-var path = require( 'path' );
-var packages = require( 'continua-pack' );
-var rootApp = path.resolve( './public/package' );
+var _ = require( "lodash" );
+var path = require( "path" );
+var packages = require( "nonstop-pack" );
+var rootApp = path.resolve( "./public/package" );
 var packageList;
 
 packages.getList( rootApp ).then( function( list ) {
@@ -11,14 +10,13 @@ packages.getList( rootApp ).then( function( list ) {
 
 module.exports = function() {
 	return {
-		name: 'package',
-		resources: 'public',
-		actions: [
-			{
-				alias: 'project',
-				verb: 'get',
-				topic: 'project',
-				path: '',
+		name: "package",
+		resources: "public",
+		actions: {
+			project: {
+				method: "get",
+				topic: "project",
+				url: "/package",
 				handle: function( envelope ) {
 					var filter;
 					if( _.isEmpty( envelope.data ) ) {
@@ -32,11 +30,10 @@ module.exports = function() {
 					envelope.reply( { data: _.unique( matches ) } );
 				}
 			},
-			{
-				alias: 'list',
-				verb: 'get',
-				topic: 'list',
-				path: '/list',
+			list: {
+				method: "get",
+				topic: "list",
+				url: "/list",
 				handle: function( envelope ) {
 					var matches = _.map( packages.find( packageList, envelope.data ), function( info ) {
 						return info;
@@ -44,11 +41,10 @@ module.exports = function() {
 					envelope.reply( { data: matches } );
 				}
 			},
-			{
-				alias: 'terms',
-				verb: 'get',
-				topic: 'terms',
-				path: '/terms',
+			terms: {
+				method: "get",
+				topic: "terms",
+				url: "/terms",
 				handle: function( envelope ) {
 					if( _.isEmpty( envelope.data ) ) {
 						envelope.reply( { data: packages.terms( packageList ) } );	
@@ -59,17 +55,16 @@ module.exports = function() {
 					
 				}
 			},
-			{
-				alias: 'upload',
-				verb: 'post',
-				path: '/:packageName',
+			upload: {
+				method: "post",
+				url: "/package/:packageName",
 				handle: function( envelope ) {
 					try {
 					if( envelope.files ) {
 						var uploaded = _.keys( envelope.files )[ 0 ];
 						var	file = envelope.files[ uploaded ];
-						if( file.extension == '.gz' ) {
-							packages.copy( rootApp, file.path, file.originalname, packageList )
+						if( file.extension === ".gz" ) {
+							packages.copy( rootApp, file.url, file.originalname, packageList )
 									.then( function() {
 										envelope.reply( { data: "Upload completed successfully" } );
 									} )
@@ -83,10 +78,10 @@ module.exports = function() {
 						envelope.reply( { statusCode: 400, data: "No file present in request" } );
 					}
 					} catch( e ) {
-						console.log( ':,(', e.stack );
+						console.log( ":,(", e.stack );
 					}
 				}
 			}
-		]
+		}
 	};
 };

@@ -1,6 +1,6 @@
 {
   "name": "nonstop-package-resource",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Hub package HTTP API as a resuable resource lib for Autohost",
   "main": "src/resource.js",
   "scripts": {
