@@ -8,6 +8,12 @@ packages.getList( rootApp ).then( function( list ) {
 	packageList = list;
 } );
 
+function getTermsFor( term ) {
+	return _.where( packages.terms( packageList ), function( x ) {
+		return _.values( x )[ 0 ] === term;
+	} );
+}
+
 module.exports = function() {
 	return {
 		name: "package",
@@ -28,6 +34,15 @@ module.exports = function() {
 						return info.project;
 					} );
 					envelope.reply( { data: _.unique( matches ) } );
+				},
+				parameters: {
+					project: function() { return { choice: getTermsFor( "project" ) }; },
+					owner: function() { return { choice: getTermsFor( "owner" ) }; },
+					branch: function() { return { choice: getTermsFor( "branch" ) }; },
+					version: function() { return { choice: getTermsFor( "version" ) }; },
+					build: function() { return { choice: getTermsFor( "build" ) }; },
+					platform: function() { return { choice: getTermsFor( "platform" ) }; },
+					architecture: function() { return { choice: getTermsFor( "architecture" ) }; }
 				}
 			},
 			list: {
@@ -39,6 +54,14 @@ module.exports = function() {
 						return info;
 					} );
 					envelope.reply( { data: matches } );
+				},
+				parameters: {
+					owner: function() { return { choice: getTermsFor( "owner" ) }; },
+					branch: function() { return { choice: getTermsFor( "branch" ) }; },
+					version: function() { return { choice: getTermsFor( "version" ) }; },
+					build: function() { return { choice: getTermsFor( "build" ) }; },
+					platform: function() { return { choice: getTermsFor( "platform" ) }; },
+					architecture: function() { return { choice: getTermsFor( "architecture" ) }; }
 				}
 			},
 			terms: {
