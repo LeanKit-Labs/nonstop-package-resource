@@ -18,10 +18,11 @@ module.exports = function() {
 	return {
 		name: "package",
 		resources: "public",
+		urlPrefix: "nonstop",
 		actions: {
-			project: {
+			list: {
 				method: "get",
-				topic: "project",
+				topic: "packages",
 				url: "/package",
 				handle: function( envelope ) {
 					var filter;
@@ -33,7 +34,7 @@ module.exports = function() {
 					var matches = _.map( packages.find( packageList, filter ), function( info ) {
 						return info.project;
 					} );
-					envelope.reply( { data: _.unique( matches ) } );
+					envelope.hyped( { packages: _.unique( matches ) } ).render();
 				},
 				parameters: {
 					project: function() { return { choice: getTermsFor( "project" ) }; },
@@ -47,13 +48,13 @@ module.exports = function() {
 			},
 			list: {
 				method: "get",
-				topic: "list",
-				url: "/list",
+				topic: "projects",
+				url: "/project",
 				handle: function( envelope ) {
 					var matches = _.map( packages.find( packageList, envelope.data ), function( info ) {
 						return info;
 					} );
-					envelope.reply( { data: matches } );
+					envelope.hyped( { project: matches } ).render();
 				},
 				parameters: {
 					owner: function() { return { choice: getTermsFor( "owner" ) }; },
@@ -73,7 +74,7 @@ module.exports = function() {
 						envelope.reply( { data: packages.terms( packageList ) } );	
 					} else {
 						var matches = packages.find( packageList, envelope.data );
-						envelope.reply( { data: packages.terms( matches ) } );	
+						envelope.hyped( { terms: packages.terms( matches ) } ).render();	
 					}
 					
 				}
