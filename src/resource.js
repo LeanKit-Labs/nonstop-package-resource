@@ -46,7 +46,7 @@ module.exports = function() {
 					architecture: function() { return { choice: getTermsFor( "architecture" ) }; }
 				}
 			},
-			list: {
+			projects: {
 				method: "get",
 				topic: "projects",
 				url: "/project",

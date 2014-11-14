@@ -1,6 +1,6 @@
 ## 0.1.0
 
-### 0.1.4
+### 0.1.5
 Fix weird API. Add URL prefix and use hyped to render responses.
 
 ### 0.1.3
