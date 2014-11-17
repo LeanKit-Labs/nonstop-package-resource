@@ -1,5 +1,8 @@
 ## 0.1.0
 
+### 01.1.6
+Bug fixes for upload handle and getLatest behaviors.
+
 ### 0.1.5
 Fix weird API. Add URL prefix and use hyped to render responses.
 

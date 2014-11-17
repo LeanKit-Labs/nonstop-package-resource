@@ -1,12 +1,30 @@
 var _ = require( "lodash" );
 var path = require( "path" );
 var packages = require( "nonstop-pack" );
-var rootApp = path.resolve( "./public/package" );
+var rootApp = path.resolve( "./public/nonstop/package" );
 var packageList;
+var mkdirp = require( "mkdirp" );
 
+mkdirp( rootApp );
 packages.getList( rootApp ).then( function( list ) {
 	packageList = list;
 } );
+
+function getFilter( envelope ) {
+	var filter;
+	if( _.isEmpty( envelope.data ) ) {
+		filter = function( x ) { return x; };
+	} else {
+		filter = envelope.data;
+	}
+	if( filter.osVersion === "any" ) {
+		delete filter.osVersion;
+	}
+	if( filter.osName === "any" ) {
+		delete filter.osName;
+	}
+	return filter;
+}
 
 function getTermsFor( term ) {
 	return _.where( packages.terms( packageList ), function( x ) {
@@ -18,21 +36,16 @@ module.exports = function() {
 	return {
 		name: "package",
 		resources: "public",
-		urlPrefix: "nonstop",
+		urlPrefix: "/nonstop",
 		actions: {
 			list: {
 				method: "get",
 				topic: "packages",
 				url: "/package",
 				handle: function( envelope ) {
-					var filter;
-					if( _.isEmpty( envelope.data ) ) {
-						filter = function( x ) { return x; };
-					} else {
-						filter = envelope.data;
-					}
+					var filter = getFilter( envelope );					
 					var matches = _.map( packages.find( packageList, filter ), function( info ) {
-						return info.project;
+						return info;
 					} );
 					envelope.hyped( { packages: _.unique( matches ) } ).render();
 				},
@@ -51,8 +64,9 @@ module.exports = function() {
 				topic: "projects",
 				url: "/project",
 				handle: function( envelope ) {
-					var matches = _.map( packages.find( packageList, envelope.data ), function( info ) {
-						return info;
+					var filter = getFilter( envelope );
+					var matches = _.map( packages.find( packageList, filter ), function( info ) {
+						return info.project;
 					} );
 					envelope.hyped( { project: matches } ).render();
 				},
@@ -81,25 +95,25 @@ module.exports = function() {
 			},
 			upload: {
 				method: "post",
-				url: "/package/:packageName",
+				url: "/package",
 				handle: function( envelope ) {
 					try {
 					if( envelope.files ) {
 						var uploaded = _.keys( envelope.files )[ 0 ];
 						var	file = envelope.files[ uploaded ];
-						if( file.extension === ".gz" ) {
-							packages.copy( rootApp, file.url, file.originalname, packageList )
+						if( file.extension === "gz" ) {
+							packages.copy( rootApp, file.path, file.originalname, packageList )
 									.then( function() {
-										envelope.reply( { data: "Upload completed successfully" } );
+										envelope.hyped( { message: "Upload completed successfully" } ).render();
 									} )
 									.then( null, function( err ) {
-										envelope.reply( { statusCode: 500, data: err } );
+										envelope.hyped( { message: "An error occurred during file transfer" } ).status( 500 ).render();
 									} );
 						} else {
-							envelope.reply( { statusCode: 400, data: "Will not accept invalid package" } );
+							envelope.hyped( { message: "Will not accept invalid package" } ).status( 400 ).render();
 						}
 					} else {
-						envelope.reply( { statusCode: 400, data: "No file present in request" } );
+						envelope.hyped( { message: "No file present in request" } ).status( 400 ).render();
 					}
 					} catch( e ) {
 						console.log( ":,(", e.stack );
