@@ -1,5 +1,9 @@
 ## 0.1.0
 
+### 0.1.9
+
+Bug fix - fix error message on file transfer error.
+
 ### 0.1.8
 Update resource to work with latest Autohost action syntax.
 

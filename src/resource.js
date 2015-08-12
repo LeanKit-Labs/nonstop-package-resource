@@ -106,7 +106,7 @@ module.exports = function() {
 											return { data: { message: "Package upload completed successfully!" , status: 200 } };
 										} )
 										.then( null, function( err ) {
-											console.log( "File transfer error:", e.stack );
+											console.log( "File transfer error:", err.stack );
 											return { data: { message: "An error occurred during file transfer." }, status: 500 };
 										} );
 							} else {
