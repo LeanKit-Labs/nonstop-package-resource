@@ -1,5 +1,8 @@
 ## 0.1.0
 
+### 0.1.8
+Update resource to work with latest Autohost action syntax.
+
 ### 0.1.7
 Add missing lib to package.json
 

@@ -43,11 +43,11 @@ module.exports = function() {
 				topic: "packages",
 				url: "/package",
 				handle: function( envelope ) {
-					var filter = getFilter( envelope );					
+					var filter = getFilter( envelope );
 					var matches = _.map( packages.find( packageList, filter ), function( info ) {
 						return info;
 					} );
-					envelope.hyped( { packages: _.unique( matches ) } ).render();
+					return { data: { packages: _.unique( matches ) } };
 				},
 				parameters: {
 					project: function() { return { choice: getTermsFor( "project" ) }; },
@@ -68,7 +68,7 @@ module.exports = function() {
 					var matches = _.map( packages.find( packageList, filter ), function( info ) {
 						return info.project;
 					} );
-					envelope.hyped( { project: matches } ).render();
+					return { data: { project: matches } };
 				},
 				parameters: {
 					owner: function() { return { choice: getTermsFor( "owner" ) }; },
@@ -85,12 +85,11 @@ module.exports = function() {
 				url: "/terms",
 				handle: function( envelope ) {
 					if( _.isEmpty( envelope.data ) ) {
-						envelope.reply( { data: packages.terms( packageList ) } );	
+						return { data: { terms: packages.terms( packageList ) } };
 					} else {
 						var matches = packages.find( packageList, envelope.data );
-						envelope.hyped( { terms: packages.terms( matches ) } ).render();	
+						return { data: { terms: packages.terms( matches ) } };
 					}
-					
 				}
 			},
 			upload: {
@@ -98,25 +97,27 @@ module.exports = function() {
 				url: "/package",
 				handle: function( envelope ) {
 					try {
-					if( envelope.files ) {
-						var uploaded = _.keys( envelope.files )[ 0 ];
-						var	file = envelope.files[ uploaded ];
-						if( file.extension === "gz" ) {
-							packages.copy( rootApp, file.path, file.originalname, packageList )
-									.then( function() {
-										envelope.hyped( { message: "Upload completed successfully" } ).render();
-									} )
-									.then( null, function( err ) {
-										envelope.hyped( { message: "An error occurred during file transfer" } ).status( 500 ).render();
-									} );
+						if( envelope.files ) {
+							var uploaded = _.keys( envelope.files )[ 0 ];
+							var	file = envelope.files[ uploaded ];
+							if( file.extension === "gz" ) {
+								return packages.copy( rootApp, file.path, file.originalname, packageList )
+										.then( function() {
+											return { data: { message: "Package upload completed successfully!" , status: 200 } };
+										} )
+										.then( null, function( err ) {
+											console.log( "File transfer error:", e.stack );
+											return { data: { message: "An error occurred during file transfer." }, status: 500 };
+										} );
+							} else {
+								return { data: { message: "Package is invalid" }, status: 400 };
+							}
 						} else {
-							envelope.hyped( { message: "Will not accept invalid package" } ).status( 400 ).render();
+							return { data: { message: "No file was present" }, status: 400 };
 						}
-					} else {
-						envelope.hyped( { message: "No file present in request" } ).status( 400 ).render();
-					}
 					} catch( e ) {
-						console.log( ":,(", e.stack );
+						console.log( "Error during package upload:", e.stack );
+						return { data: { message: "An exception occurred during upload." }, status: 500 };
 					}
 				}
 			}
