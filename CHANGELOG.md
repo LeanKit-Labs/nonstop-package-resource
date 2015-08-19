@@ -1,5 +1,8 @@
 ## 0.1.0
 
+### 0.1.10
+Add support for new package format to support commit slugs.
+
 ### 0.1.9
 
 Bug fix - fix error message on file transfer error.

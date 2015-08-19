@@ -53,6 +53,7 @@ module.exports = function() {
 					project: function() { return { choice: getTermsFor( "project" ) }; },
 					owner: function() { return { choice: getTermsFor( "owner" ) }; },
 					branch: function() { return { choice: getTermsFor( "branch" ) }; },
+					slug: function() { return { choice: getTermsFor( "slug" ) }; },
 					version: function() { return { choice: getTermsFor( "version" ) }; },
 					build: function() { return { choice: getTermsFor( "build" ) }; },
 					platform: function() { return { choice: getTermsFor( "platform" ) }; },
@@ -73,6 +74,7 @@ module.exports = function() {
 				parameters: {
 					owner: function() { return { choice: getTermsFor( "owner" ) }; },
 					branch: function() { return { choice: getTermsFor( "branch" ) }; },
+					slug: function() { return { choice: getTermsFor( "slug" ) }; },
 					version: function() { return { choice: getTermsFor( "version" ) }; },
 					build: function() { return { choice: getTermsFor( "build" ) }; },
 					platform: function() { return { choice: getTermsFor( "platform" ) }; },
