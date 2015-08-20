@@ -32,7 +32,7 @@ function getTermsFor( term ) {
 	} );
 }
 
-module.exports = function() {
+module.exports = function( host, events ) {
 	return {
 		name: "package",
 		resources: "public",
@@ -104,13 +104,18 @@ module.exports = function() {
 							var	file = envelope.files[ uploaded ];
 							if( file.extension === "gz" ) {
 								return packages.copy( rootApp, file.path, file.originalname, packageList )
-										.then( function() {
-											return { data: { message: "Package upload completed successfully!" , status: 200 } };
-										} )
-										.then( null, function( err ) {
-											console.log( "File transfer error:", err.stack );
-											return { data: { message: "An error occurred during file transfer." }, status: 500 };
-										} );
+										.then(
+											function() {
+												if( events ) {
+													events.publish( "package.uploaded", packages.parse( rootApp, file.originalname ) );
+												}
+												return { data: { message: "Package upload completed successfully!" , status: 200 } };
+											},
+											function( err ) {
+												console.log( "File transfer error:", err.stack );
+												return { data: { message: "An error occurred during file transfer." }, status: 500 };
+											}
+										);
 							} else {
 								return { data: { message: "Package is invalid" }, status: 400 };
 							}
@@ -120,6 +125,60 @@ module.exports = function() {
 					} catch( e ) {
 						console.log( "Error during package upload:", e.stack );
 						return { data: { message: "An exception occurred during upload." }, status: 500 };
+					}
+				}
+			},
+			promote: {
+				method: "put",
+				url: "/package",
+				handle: function( envelope ) {
+					var filter = getFilter( envelope );
+					var matches = _.unique( _.map( packages.find( packageList, filter ), function( info ) {
+						return info;
+					} ) );
+					if( matches.length === 1 ) {
+						var info = _.clone( matches[ 0 ] );
+						info.name.replace( /([0-9][.][0-9][.][0-9])[~][0-9]{1,3}/, "$1~" );
+						info.fullPath.replace( /([0-9][.][0-9][.][0-9])[~][0-9]{1,3}/, "$1~" );
+						return packages.promote( rootApp, info, packages )
+							.then(
+								function() {
+									if( events ) {
+										events.publish( "package.promoted", info );
+									}
+									return {
+										data: {
+											message: "Package promoted to release",
+											promoted: matches[ 0 ].name,
+											release: info.name
+										}
+									};
+								},
+								function( e ) {
+									console.log( "Error during package promotion:", e.stack );
+									return {
+										status: 500,
+										data: {
+											message: "Failed to promote package due to error"
+										}
+									};
+								}
+							);
+
+					} else if( matches.length > 0 ) {
+						return {
+							status: 400,
+							data: {
+								message: "Cannot promote more than one package",
+								count: matches.length,
+								matches: _.pluck( matches, "name" )
+							}
+						};
+					} else {
+						return {
+							status: 404,
+							data: { message: "No packages matched the provided criteria" }
+						};
 					}
 				}
 			}

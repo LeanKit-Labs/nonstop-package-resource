@@ -1,7 +1,9 @@
 ## 0.1.0
 
 ### 0.1.10
-Add support for new package format to support commit slugs.
+ * Add support for new package format to includ commit slugs
+ * Add package promotion
+ * Add event channel to support web hooks in the index
 
 ### 0.1.9
 
