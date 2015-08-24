@@ -137,12 +137,9 @@ module.exports = function( host, events ) {
 						return info;
 					} ) );
 					if( matches.length === 1 ) {
-						var info = _.clone( matches[ 0 ] );
-						info.name.replace( /([0-9][.][0-9][.][0-9])[~][0-9]{1,3}/, "$1~" );
-						info.fullPath.replace( /([0-9][.][0-9][.][0-9])[~][0-9]{1,3}/, "$1~" );
-						return packages.promote( rootApp, info, packages )
+						return packages.promote( rootApp, matches[ 0 ], packages )
 							.then(
-								function() {
+								function( info ) {
 									if( events ) {
 										events.publish( "package.promoted", info );
 									}

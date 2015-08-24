@@ -1,7 +1,11 @@
 ## 0.1.0
 
+### 0.1.12
+ * Include corrected nonstop-pack version
+ * Bug fix - use newer promote functionality in nonstop-pack
+
 ### 0.1.11
- * Add missing package promotion
+Add missing package promotion.
 
 ### 0.1.10
  * Add support for new package format to includ commit slugs
