@@ -1,5 +1,9 @@
 ## 0.1.0
 
+### 0.1.13
+ * Bug fix - correct improper use of `name` property to `file`
+ * Bug fix - pass packageList argument correctly when promoting
+
 ### 0.1.12
  * Include corrected nonstop-pack version
  * Bug fix - use newer promote functionality in nonstop-pack

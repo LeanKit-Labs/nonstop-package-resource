@@ -137,7 +137,7 @@ module.exports = function( host, events ) {
 						return info;
 					} ) );
 					if( matches.length === 1 ) {
-						return packages.promote( rootApp, matches[ 0 ], packages )
+						return packages.promote( rootApp, matches[ 0 ], packageList )
 							.then(
 								function( info ) {
 									if( events ) {
@@ -146,8 +146,8 @@ module.exports = function( host, events ) {
 									return {
 										data: {
 											message: "Package promoted to release",
-											promoted: matches[ 0 ].name,
-											release: info.name
+											promoted: matches[ 0 ].file,
+											release: info.file
 										}
 									};
 								},
@@ -161,14 +161,13 @@ module.exports = function( host, events ) {
 									};
 								}
 							);
-
 					} else if( matches.length > 0 ) {
 						return {
 							status: 400,
 							data: {
 								message: "Cannot promote more than one package",
 								count: matches.length,
-								matches: _.pluck( matches, "name" )
+								matches: _.pluck( matches, "file" )
 							}
 						};
 					} else {
