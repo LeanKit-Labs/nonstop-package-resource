@@ -1,5 +1,11 @@
 ## 0.1.0
 
+### 0.1.16
+ * Improve package search to allow version + build to be provided in version
+
+### 0.1.14
+ * Bug fix - include topic in event payload being published
+
 ### 0.1.13
  * Bug fix - correct improper use of `name` property to `file`
  * Bug fix - pass packageList argument correctly when promoting
