@@ -65,7 +65,6 @@ function promote( package ) {
 }
 
 function upload( file ) {
-	var packageList = [];
 	try {
 		return packages.copy( rootApp, file.path, file.originalname, packageList )
 			.then(
