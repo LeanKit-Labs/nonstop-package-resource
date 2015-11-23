@@ -1,3 +1,10 @@
+## 0.2.*
+
+### Next
+ * Change to fs-extra
+ * Update to latest nonstop-pack
+
+
 ## 0.1.0
 
 ### 0.1.16

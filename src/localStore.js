@@ -1,25 +1,25 @@
 var _ = require( "lodash" );
-var fs = require( "fs" );
+var fs = require( "fs-extra" );
 var when = require( "when" );
 var path = require( "path" );
 var rootApp = path.resolve( "./public/nonstop/package" );
 var packages = require( "nonstop-pack" );
-var mkdirp = require( "mkdirp" );
 
 var packageList;
 
-mkdirp( rootApp );
-packages.getList( rootApp ).then( function( list ) {
-	packageList = _.map( list, function( package ) {
-		package.simpleVersion = package;
-		return package;
+fs.mkdirpSync( rootApp );
+packages.getList( rootApp )
+	.then( function( list ) {
+		packageList = _.map( list, function( package ) {
+			package.simpleVersion = package.version.split( "-" )[ 0 ];
+			return package;
+		} );
 	} );
-} );
 
 function download( package ) {
 	return when.promise( function( resolve, reject ) {
 		if( fs.existsSync( package.fullPath ) ) {
-			return fs.createReadStream( package.fullPath );
+			resolve( fs.createReadStream( package.fullPath ) );
 		} else {
 			reject( new Error( "No package named '" + package.file +"' found" ) );
 		}
@@ -27,16 +27,18 @@ function download( package ) {
 }
 
 function getTermsFor( term ) {
-	var terms = _.where( packages.terms( packageList ), function( x ) {
-		return _.values( x )[ 0 ] === term;
-	} );
+	var terms = _.reduce( packages.terms( packageList ), function( acc, x ) {
+		var values = _.values( x );
+		if( values[ 0 ] === term ) {
+			acc.push( _.keys( x )[ 0 ] );
+		}
+		return acc;
+	}, [] );
 	return when.resolve( terms );
 }
 
 function getList( filter ) {
-	var matches = _.map( packages.find( packageList, filter ), function( info ) {
-		return info;
-	} );
+	var matches = packages.find( packageList, filter );
 	return when.resolve( _.unique( matches ) );
 }
 
@@ -49,22 +51,17 @@ function getProjects( filter ) {
 
 function getTerms( filter ) {
 	var list;
-	if( filter ) {
+	if( _.isEmpty( filter ) ) {
+		list = packages.terms( packageList );
+	} else {
 		var matches = packages.find( packageList, filter );
 		list = packages.terms( matches );
-	} else {
-		list = packages.terms();
 	}
 	return when.resolve( list );
 }
 
 function promote( package ) {
-	return packages.promote( rootApp, package, packageList )
-		.then(
-			function( info ) {
-				return info;
-			}
-		);
+	return packages.promote( rootApp, package, packageList );
 }
 
 function upload( file ) {

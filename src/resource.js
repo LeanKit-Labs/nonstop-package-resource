@@ -27,7 +27,39 @@ function getFilter( envelope ) {
 	return filter;
 }
 
-function createResource( events, packageStore, packageInfo ) {
+function setupDownloadAlias( host, packageInfo, packageStore ) {
+	host.http.middleware( "/nonstop/package/:file", function package( req, res ) {
+		var file = req.params.file;
+		if( file ) {
+			return packageInfo.getList( { file: file } )
+				.then( function( matches ) {
+					var package = matches[ 0 ];
+					return packageStore.download( package )
+						.then( function( stream ) {
+							var headers = {
+								"Content-Type": "application/gzip",
+								"Content-Disposition": "attachment; filename=\"" + file + "\""
+							};
+							res.status( 200 );
+							res.set( headers );
+							stream.pipe( res );
+						}, function( err ) {
+							console.log( "Error trying to get a file stream for " + file + " : " + err.stack );
+							res.status( 500 );
+							res.set( { "Content-Type": "application/json" } );
+							res.send( JSON.stringify( { message: "An error occurred trying to obtain a file stream to " + file } ) );
+						} );
+					} );
+		} else {
+			res.status( 400 );
+			res.set( { "Content-Type": "application/json" } );
+			res.send( JSON.stringify( { message: "No package was specified for download" } ) );
+		}
+	} );
+}
+
+function createResource( autohost, events, packageStore, packageInfo ) {
+	setupDownloadAlias( autohost, packageInfo, packageStore );
 	return {
 		name: "package",
 		resources: "public",
@@ -41,6 +73,7 @@ function createResource( events, packageStore, packageInfo ) {
 					var filter = getFilter( envelope );
 					return packageInfo.getList( filter )
 						.then( function( list ) {
+							console.log( list );
 							return { data: { packages: list } };
 						} );
 				},
@@ -255,43 +288,14 @@ function createResource( events, packageStore, packageInfo ) {
 	};
 }
 
-module.exports = function( host ) {
+module.exports = function( host, events ) {
+	host.fount.register( "autohost", host );
 	if( !host.fount.canResolve( [ "packageInfo", "packageStore" ] ) ) {
 		var internal = require( "./localStore" )();
 		host.fount.register( "packageInfo", internal );
-		host.fount.register( "pacakgeStore", internal );
+		host.fount.register( "packageStore", internal );
+		console.log( "Package resource is using local storage" );
 	}
-
-	host.fount.resolve( "packageStore", "packageInfo", function( packageStore, packageInfo ) {
-		host.http.route( "/nonstop/package/:file", "get", function( req, res ) {
-			var file = req.params.file;
-			if( file ) {
-				return packageInfo.getList( { file: file } )
-					.then( function( matches ) {
-						var package = matches[ 0 ];
-						return packageStore.download( package )
-							.then( function( stream ) {
-								var headers = {
-									"Content-Type": "application/gzip",
-									"Content-Disposition": "attachment; filename=\"" + file + "\""
-								};
-								res.status( 200 );
-								res.set( headers );
-								stream.pipe( res );
-							}, function( err ) {
-								console.log( "Error trying to get a file stream for " + file + " : " + err.stack );
-								res.status( 500 );
-								res.set( { "Content-Type": "application/json" } );
-								res.send( JSON.stringify( { message: "An error occurred trying to obtain a file stream to " + file } ) );
-							} );
-						} );
-			} else {
-				res.status( 400 );
-				res.set( { "Content-Type": "application/json" } );
-				res.send( JSON.stringify( { message: "No package was specified for download" } ) );
-			}
-		} );
-	} );
 
 	return host.fount.inject( createResource );
 };
