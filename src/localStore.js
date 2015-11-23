@@ -16,6 +16,10 @@ packages.getList( rootApp )
 		} );
 	} );
 
+function addPromoted() {
+	// doesn't need to do anything at the moment
+}
+
 function download( package ) {
 	return when.promise( function( resolve, reject ) {
 		if( fs.existsSync( package.fullPath ) ) {
@@ -84,6 +88,7 @@ function upload( file ) {
 
 module.exports = function() {
 	return {
+		addPromoted: addPromoted,
 		download: download,
 		getList: getList,
 		getProjects: getProjects,

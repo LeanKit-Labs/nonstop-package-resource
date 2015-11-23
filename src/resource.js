@@ -79,12 +79,11 @@ function createResource( autohost, events, packageStore, packageInfo ) {
 					var filter = getFilter( envelope );
 					return packageInfo.getList( filter )
 						.then( function( list ) {
-							console.log( list );
 							return { data: { packages: list } };
 						} );
 				},
 				parameters: {
-					project: function() { return { choice: packageInfo.getTermsFor( "project" ) }; },
+					project: function() { return packageInfo.getTermsFor( "project" ).then( function( projects ) { return { choice: projects }; } ); },
 					owner: function() { return { choice: packageInfo.getTermsFor( "owner" ) }; },
 					branch: function() { return { choice: packageInfo.getTermsFor( "branch" ) }; },
 					slug: function() { return { choice: packageInfo.getTermsFor( "slug" ) }; },
@@ -120,7 +119,8 @@ function createResource( autohost, events, packageStore, packageInfo ) {
 				topic: "terms",
 				url: "/terms",
 				handle: function( envelope ) {
-					return packageInfo.getTerms( envelope.data )
+					var filter = getFilter( envelope );
+					return packageInfo.getTerms( filter )
 						.then( function( terms ) {
 							return { data: { terms: terms } };
 						} );
@@ -213,8 +213,7 @@ function createResource( autohost, events, packageStore, packageInfo ) {
 							var	file = envelope.files[ uploaded ];
 							if( file.extension === "gz" ) {
 								return packageStore.upload( file )
-									.then(
-										function( success ) {
+									.then( function( success ) {
 											if( events ) {
 												events.publish( "package.uploaded",
 													_.defaults( packages.parse( rootApp, file.originalname ), { topic: "package.promoted" } ) );
@@ -224,8 +223,10 @@ function createResource( autohost, events, packageStore, packageInfo ) {
 											} else {
 												return { data: { message: "An error occurred during file transfer." }, status: 500 };
 											}
-										}
-									);
+										}, function( err ) {
+											console.log( "Error during package upload:", err.stack );
+												return { status: 500, data: { message: "An exception occurred during upload." } };
+										} );
 							} else {
 								return { data: { message: "Package is invalid" }, status: 400 };
 							}
@@ -296,12 +297,19 @@ function createResource( autohost, events, packageStore, packageInfo ) {
 
 module.exports = function( host, events ) {
 	host.fount.register( "autohost", host );
-	if( !host.fount.canResolve( [ "packageInfo", "packageStore" ] ) ) {
+	if( host.fount.canResolve( "packageConfig" ) ) {
+		return host.fount.inject( function( packageConfig ) {
+			var packageInfo, packageStore;
+			if( packageConfig.s3 ) {
+				var s3 = require( "./s3store" )( packageConfig );
+				packageInfo = packageStore = s3;
+				console.log( "Package resource is using S3 for package storage" );
+			}
+			return createResource( host, events, packageStore, packageInfo );
+		} );
+	} else if( !host.fount.canResolve( [ "packageInfo", "packageStore" ] ) ) {
 		var internal = require( "./localStore" )();
-		host.fount.register( "packageInfo", internal );
-		host.fount.register( "packageStore", internal );
 		console.log( "Package resource is using local storage" );
+		return createResource( host, events, internal, internal );
 	}
-
-	return host.fount.inject( createResource );
 };

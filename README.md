@@ -78,3 +78,35 @@ POST /package
 ### Promote
 Promotes a package to release. Nonstop builds will _not_ produce a release version, there will always be a build number appended so that packages look like pre-releases to the service hosts. Promoting a package removes the build number and creates a non-pre-release semantic version of that package. Use with caution.
 
+## Configuration
+By default this module uses the file system and memory to manage packages and the related information. The major trade-off being that everything is done in-memory which means some performance degredation over time.
+
+No additional configuration is required to get default behavior.
+
+### S3 storage
+To have packages stored in S3, you'll need to provide configuration. Configuration for this module is provided via fount:
+
+```
+var fount = require( 'fount' );
+var hyped = require( 'hyped' );
+var host = require( 'autohost' );
+
+var packages = {
+	s3: {
+		id: '',
+		key: '',
+		bucket: ''
+	}
+};
+
+fount.register( 'packageConfig', packages );
+
+host.init( {
+		port: 8888,
+		noOptions: true,
+		urlStrategy: hyped.urlStrategy,
+		modules: [ 'nonstop-package-resource' ]
+	} )
+	.then( hyped.addResources );
+hyped.setupMiddleware( host );
+```
