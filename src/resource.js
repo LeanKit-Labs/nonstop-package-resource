@@ -1,4 +1,7 @@
 var _ = require( "lodash" );
+var packages = require( "nonstop-pack" );
+var path = require( "path" );
+var rootApp = path.resolve( "./public/nonstop/package" );
 
 function getFilter( envelope ) {
 	var filter;
@@ -28,7 +31,10 @@ function getFilter( envelope ) {
 }
 
 function setupDownloadAlias( host, packageInfo, packageStore ) {
-	host.http.middleware( "/nonstop/package/:file", function package( req, res ) {
+	host.http.middleware( "/nonstop/package/:file", function package( req, res, next ) {
+		if( req.method.toLowerCase() !== "get" ) {
+			next();
+		}
 		var file = req.params.file;
 		if( file ) {
 			return packageInfo.getList( { file: file } )
