@@ -94,7 +94,7 @@ var fount = require( 'fount' );
 var hyped = require( 'hyped' );
 var host = require( 'autohost' );
 
-var packages = {
+var storage = {
 	s3: {
 		id: '',
 		key: '',
@@ -102,7 +102,7 @@ var packages = {
 	}
 };
 
-fount.register( 'packageConfig', packages );
+fount.register( 'storageConfig', storage );
 
 host.init( {
 		port: 8888,
@@ -122,7 +122,7 @@ var fount = require( 'fount' );
 var hyped = require( 'hyped' );
 var host = require( 'autohost' );
 
-var packages = {
+var storage = {
 	rethink: {
 		host: 'localhost',
 		port: 28015,
@@ -130,7 +130,7 @@ var packages = {
 	}
 };
 
-fount.register( 'packageConfig', packages );
+fount.register( 'storageConfig', storage );
 
 host.init( {
 		port: 8888,

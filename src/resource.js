@@ -302,25 +302,24 @@ function createResource( autohost, events, packageStore, packageInfo ) {
 }
 
 module.exports = function( host, events ) {
-	host.fount.register( "autohost", host );
 	var internal = require( "./localStore" )();
-	if( host.fount.canResolve( "packageConfig" ) ) {
-		return host.fount.inject( function( packageConfig ) {
+	if( host.fount.canResolve( "storageConfig" ) ) {
+		return host.fount.inject( function( storageConfig ) {
 			var packageInfo, packageStore;
 			packageInfo = packageStore = internal;
-			if( packageConfig.s3 ) {
-				var s3 = require( "./s3store" )( packageConfig );
+			if( storageConfig.s3 ) {
+				var s3 = require( "./s3store" )( storageConfig );
 				packageInfo = packageStore = s3;
 				console.log( "Package resource is using S3 for package storage" );
 			}
-			if( packageConfig.rethink ) {
-				var rethink = require( "./rethinkInfo" )( packageConfig );
+			if( storageConfig.rethink ) {
+				var rethink = require( "./rethinkInfo" )( storageConfig );
 				packageInfo = rethink;
 				console.log( "Package resource is using RethinkDB for package metadata" );
 			}
 			return createResource( host, events, packageStore, packageInfo );
 		} );
-	} else if( !host.fount.canResolve( [ "packageInfo", "packageStore" ] ) ) {
+	} else {
 		console.log( "Package resource is using local storage" );
 		return createResource( host, events, internal, internal );
 	}
