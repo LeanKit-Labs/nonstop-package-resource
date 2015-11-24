@@ -102,6 +102,8 @@ function createResource( autohost, events, packageStore, packageInfo ) {
 					return packageInfo.getProjects( filter )
 						.then( function( list ) {
 							return { data: { project: list } };
+						}, function( err ) {
+							console.log( "FAIL FAIL FAILY FAIL WHALE", err.stack );
 						} );
 				},
 				parameters: {
@@ -207,35 +209,39 @@ function createResource( autohost, events, packageStore, packageInfo ) {
 				method: "post",
 				url: "/package",
 				handle: function( envelope ) {
-					try {
-						if( envelope.files ) {
-							var uploaded = _.keys( envelope.files )[ 0 ];
-							var	file = envelope.files[ uploaded ];
-							if( file.extension === "gz" ) {
-								return packageStore.upload( file )
-									.then( function( success ) {
+					if( envelope.files ) {
+						var uploaded = _.keys( envelope.files )[ 0 ];
+						var	file = envelope.files[ uploaded ];
+						if( file.extension === "gz" ) {
+							return packageStore.upload( file )
+								.then(
+									function( package ) {
+										try {
+											packageInfo.addPackage( package );
 											if( events ) {
 												events.publish( "package.uploaded",
 													_.defaults( packages.parse( rootApp, file.originalname ), { topic: "package.promoted" } ) );
 											}
-											if( success ) {
+											if( package ) {
 												return { data: { message: "Package upload completed successfully!" , status: 200 } };
 											} else {
 												return { data: { message: "An error occurred during file transfer." }, status: 500 };
 											}
-										}, function( err ) {
-											console.log( "Error during package upload:", err.stack );
-												return { status: 500, data: { message: "An exception occurred during upload." } };
-										} );
-							} else {
-								return { data: { message: "Package is invalid" }, status: 400 };
-							}
+										} catch( e ) {
+											console.log( "Error during package upload:", e.stack );
+											return { data: { message: "An exception occurred during upload." }, status: 500 };
+										}
+									},
+									function( err ) {
+										console.log( "Error during package upload:", err.stack );
+											return { status: 500, data: { message: "An exception occurred during upload." } };
+									}
+								);
 						} else {
-							return { data: { message: "No file was present" }, status: 400 };
+							return { data: { message: "Package is invalid" }, status: 400 };
 						}
-					} catch( e ) {
-						console.log( "Error during package upload:", e.stack );
-						return { data: { message: "An exception occurred during upload." }, status: 500 };
+					} else {
+						return { data: { message: "No file was present" }, status: 400 };
 					}
 				}
 			},
@@ -297,18 +303,24 @@ function createResource( autohost, events, packageStore, packageInfo ) {
 
 module.exports = function( host, events ) {
 	host.fount.register( "autohost", host );
+	var internal = require( "./localStore" )();
 	if( host.fount.canResolve( "packageConfig" ) ) {
 		return host.fount.inject( function( packageConfig ) {
 			var packageInfo, packageStore;
+			packageInfo = packageStore = internal;
 			if( packageConfig.s3 ) {
 				var s3 = require( "./s3store" )( packageConfig );
 				packageInfo = packageStore = s3;
 				console.log( "Package resource is using S3 for package storage" );
 			}
+			if( packageConfig.rethink ) {
+				var rethink = require( "./rethinkInfo" )( packageConfig );
+				packageInfo = rethink;
+				console.log( "Package resource is using RethinkDB for package metadata" );
+			}
 			return createResource( host, events, packageStore, packageInfo );
 		} );
 	} else if( !host.fount.canResolve( [ "packageInfo", "packageStore" ] ) ) {
-		var internal = require( "./localStore" )();
 		console.log( "Package resource is using local storage" );
 		return createResource( host, events, internal, internal );
 	}

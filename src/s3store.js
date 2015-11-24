@@ -60,7 +60,9 @@ function getList( client, bucket, filter ) {
 		} )
 		.on( "data", function( results ) {
 			_.map( results.Contents, function( item ) {
-				list.push( packages.parse( "./", item.Key ) );
+				var package = packages.parse( "./", item.Key );
+				package.simpleVersion = package.version.split( "-" )[ 0 ];
+				list.push( package );
 			} );
 		} );
 	} );
@@ -111,11 +113,11 @@ function upload( client, bucket, file ) {
 		.on( "error", function( err ) {
 			console.log( "Error during package upload:", err.stack );
 			fs.remove( file.path );
-			reject( err );
+			reject( undefined );
 		} )
 		.on( "end", function() {
 			fs.remove( file.path );
-			resolve( true );
+			resolve( packages.parse( "./", file.originalname ) );
 		} );
 	} );
 }
@@ -130,6 +132,7 @@ module.exports = function( config ) {
 	} );
 
 	return {
+		addPackage: _.noop,
 		addPromoted: addPromoted.bind( null, client, bucket ),
 		download: download.bind( null, client, bucket ),
 		getList: getList.bind( null, client, bucket ),

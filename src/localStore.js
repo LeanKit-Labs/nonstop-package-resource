@@ -73,11 +73,11 @@ function upload( file ) {
 		return packages.copy( rootApp, file.path, file.originalname, packageList )
 			.then(
 				function() {
-					return when.resolve( true );
+					return when.resolve( packages.parse( "./", file.originalname ) );
 				},
 				function( err ) {
 					console.log( "File transfer error:", err.stack );
-					return when.resolve( false );
+					return when.resolve( undefined );
 				}
 			);
 	} catch( e ) {
@@ -88,6 +88,7 @@ function upload( file ) {
 
 module.exports = function() {
 	return {
+		addPackage: _.noop,
 		addPromoted: addPromoted,
 		download: download,
 		getList: getList,

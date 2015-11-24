@@ -1,9 +1,10 @@
 ## 0.2.*
 
 ### Next
- * Change to fs-extra
+ * Change to fs-extra vs mv, cp and rimraf
  * Update to latest nonstop-pack
-
+ * Support S3 for package storage
+ * Support RethinkDB for package information storage
 
 ## 0.1.0
 

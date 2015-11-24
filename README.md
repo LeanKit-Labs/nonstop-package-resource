@@ -83,6 +83,9 @@ By default this module uses the file system and memory to manage packages and th
 
 No additional configuration is required to get default behavior.
 
+### Alternate Storage Providers
+This module supports optional S3 package storage and optional RethinkDB package information storage. They can be used together or separately. If only Rethink is configured, the local file system is still used to store packages.
+
 ### S3 storage
 To have packages stored in S3, you'll need to provide configuration. Configuration for this module is provided via fount:
 
@@ -96,6 +99,34 @@ var packages = {
 		id: '',
 		key: '',
 		bucket: ''
+	}
+};
+
+fount.register( 'packageConfig', packages );
+
+host.init( {
+		port: 8888,
+		noOptions: true,
+		urlStrategy: hyped.urlStrategy,
+		modules: [ 'nonstop-package-resource' ]
+	} )
+	.then( hyped.addResources );
+hyped.setupMiddleware( host );
+```
+
+### RethinkDB Info
+To have packages information stored in RethinkDB, you'll need to provide configuration. Configuration for this module is provided via fount:
+
+```
+var fount = require( 'fount' );
+var hyped = require( 'hyped' );
+var host = require( 'autohost' );
+
+var packages = {
+	rethink: {
+		host: 'localhost',
+		port: 28015,
+		database: 'nonstop'
 	}
 };
 
