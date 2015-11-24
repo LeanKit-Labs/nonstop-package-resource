@@ -65,22 +65,11 @@ function setupDb( db ) {
 function addPackage( db, package ) {
 	package.id = package.file;
 	package.simpleVersion = package.version.split( "-" )[ 0 ];
-	console.log( package );
 	return rethink
 		.db( db )
 		.table( table )
 		.insert( scrub( package ) )
-		.run( connection )
-		.then(
-			function( x ) {
-				console.log( x );
-				return x;
-			},
-			function( err ) {
-				console.log( ":(", err.stack );
-				return err;
-			}
-		);
+		.run( connection );
 }
 
 function addPromoted( db, package ) {
