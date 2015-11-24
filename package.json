@@ -1,6 +1,6 @@
 {
   "name": "nonstop-package-resource",
-  "version": "0.2.0-8",
+  "version": "0.2.0",
   "description": "Package index HTTP API as a resuable resource lib for Autohost",
   "main": "src/resource.js",
   "scripts": {

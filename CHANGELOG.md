@@ -1,6 +1,6 @@
 ## 0.2.*
 
-### Next
+### 0.2.0
  * Change to fs-extra vs mv, cp and rimraf
  * Update to latest nonstop-pack
  * Support S3 for package storage
