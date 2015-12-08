@@ -1,5 +1,8 @@
 ## 0.2.*
 
+### 0.2.1
+Update nonstop pack to 0.2.1
+
 ### 0.2.0
  * Change to fs-extra vs mv, cp and rimraf
  * Update to latest nonstop-pack
